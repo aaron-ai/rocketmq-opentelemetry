@@ -22,6 +22,7 @@ import io.github.aaronai.proto.GreetingGrpc;
 import io.github.aaronai.proto.GreetingOuterClass;
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.producer.Producer;
+import org.apache.rocketmq.client.apis.producer.SendReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,8 @@ public class GreetingService extends GreetingGrpc.GreetingImplBase {
         responseObserver.onCompleted();
         try {
             Producer producer = RocketMqClients.CreateProducer();
-            RocketMqClients.sendNormalMessage(producer);
+            SendReceipt sendReceipt = RocketMqClients.sendNormalMessage(producer);
+            logger.info("Send message successfully, messageId={}", sendReceipt.getMessageId());
         } catch (ClientException e) {
             logger.error("Failed to send normal message", e);
         }

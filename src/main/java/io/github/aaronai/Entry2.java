@@ -21,10 +21,15 @@ import io.github.aaronai.http.HttpClientUtil;
 import io.github.aaronai.mq.RocketMqClients;
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Entry2 {
+    private static final Logger logger = LoggerFactory.getLogger(Entry2.class);
+
     public static void main(String[] args) throws ClientException {
         RocketMqClients.CreatePushConsumer(messageView -> {
+            logger.info("Receive message, messageId={}", messageView.getMessageId());
             HttpClientUtil.sendGetRequest();
             return ConsumeResult.SUCCESS;
         });
