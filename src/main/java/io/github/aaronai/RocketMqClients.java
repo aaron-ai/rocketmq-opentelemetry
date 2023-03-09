@@ -22,11 +22,13 @@ import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
 import org.apache.rocketmq.client.apis.SessionCredentialsProvider;
 import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
+import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
 import org.apache.rocketmq.client.apis.consumer.FilterExpression;
 import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
 import org.apache.rocketmq.client.apis.consumer.MessageListener;
 import org.apache.rocketmq.client.apis.consumer.PushConsumer;
 import org.apache.rocketmq.client.apis.message.Message;
+import org.apache.rocketmq.client.apis.message.MessageView;
 import org.apache.rocketmq.client.apis.producer.Producer;
 import org.apache.rocketmq.client.apis.producer.SendReceipt;
 import org.apache.rocketmq.client.apis.producer.Transaction;
@@ -41,6 +43,10 @@ import java.util.Map;
 public class RocketMqClients implements Closeable {
     private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
 
+    private static final String ACCESS_KEY = "yourAccessKey";
+    private static final String SECRET_KEY = "yourSecretKey";
+    private static final String ENDPOINTS = "foobar.com:8080";
+
     private static final String NORMAL_TOPIC = "normalTopic";
     private static final String FIFO_TOPIC = "fifoTopic";
     private static final String DELAY_TOPIC = "delayTopic";
@@ -51,14 +57,29 @@ public class RocketMqClients implements Closeable {
     private final Producer producer;
     private final PushConsumer pushConsumer;
 
-    public RocketMqClients(MessageListener listener) throws ClientException {
-        String accessKey = "yourAccessKey";
-        String secretKey = "yourSecretKey";
+    public static Producer CreateProducer() throws ClientException {
         SessionCredentialsProvider sessionCredentialsProvider =
-                new StaticSessionCredentialsProvider(accessKey, secretKey);
-        String endpoints = "foobar.com:8080";
+                new StaticSessionCredentialsProvider(ACCESS_KEY, SECRET_KEY);
         ClientConfiguration clientConfiguration = ClientConfiguration.newBuilder()
-                .setEndpoints(endpoints)
+                .setEndpoints(ENDPOINTS)
+                .setCredentialProvider(sessionCredentialsProvider)
+                .build();
+        // In most case, you don't need to create too many producers, singleton pattern is recommended.
+        return provider.newProducerBuilder()
+                .setClientConfiguration(clientConfiguration)
+                // Set the topic name(s), which is optional but recommended. It makes producer could prefetch the
+                // topic route before message publishing.
+                .setTopics(NORMAL_TOPIC, FIFO_TOPIC, DELAY_TOPIC, TRANSACTION_TOPIC)
+                .setTransactionChecker(messageView -> TransactionResolution.COMMIT)
+                // May throw {@link ClientException} if the producer is not initialized.
+                .build();
+    }
+
+    public RocketMqClients(MessageListener listener) throws ClientException {
+        SessionCredentialsProvider sessionCredentialsProvider =
+                new StaticSessionCredentialsProvider(ACCESS_KEY, SECRET_KEY);
+        ClientConfiguration clientConfiguration = ClientConfiguration.newBuilder()
+                .setEndpoints(ENDPOINTS)
                 .setCredentialProvider(sessionCredentialsProvider)
                 .build();
 
@@ -97,7 +118,7 @@ public class RocketMqClients implements Closeable {
         pushConsumer.close();
     }
 
-    public SendReceipt sendNormalMessage() throws ClientException {
+    public static SendReceipt sendNormalMessage(Producer producer) throws ClientException {
         byte[] body = "This is a normal message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
         final Message message = provider.newMessageBuilder()
                 // Set topic for the current message.
@@ -111,7 +132,7 @@ public class RocketMqClients implements Closeable {
         return producer.send(message);
     }
 
-    public SendReceipt sendFifoMessage() throws ClientException {
+    public static SendReceipt sendFifoMessage(Producer producer) throws ClientException {
         byte[] body = "This is a fifo message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
         final Message message = provider.newMessageBuilder()
                 // Set topic for the current message.
@@ -126,7 +147,7 @@ public class RocketMqClients implements Closeable {
         return producer.send(message);
     }
 
-    public SendReceipt sendDelayMessage() throws ClientException {
+    public static SendReceipt sendDelayMessage(Producer producer) throws ClientException {
         byte[] body = "This is a delay message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
         final Message message = provider.newMessageBuilder()
                 // Set topic for the current message.
@@ -142,7 +163,7 @@ public class RocketMqClients implements Closeable {
         return producer.send(message);
     }
 
-    public SendReceipt sendTransactionMessage() throws ClientException {
+    public static SendReceipt sendTransactionMessage(Producer producer) throws ClientException {
         byte[] body = "This is a transaction message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
         String tag = "yourMessageTagA";
         final Message message = provider.newMessageBuilder()

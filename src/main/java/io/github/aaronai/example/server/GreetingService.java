@@ -33,5 +33,6 @@ public class GreetingService extends GreetingGrpc.GreetingImplBase {
                 GreetingOuterClass.SayHelloResponse.newBuilder().setResponseContent("This is an unary request").build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+
     }
 }
