@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.github.aaronai;
+package io.github.aaronai.mq;
 
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientException;

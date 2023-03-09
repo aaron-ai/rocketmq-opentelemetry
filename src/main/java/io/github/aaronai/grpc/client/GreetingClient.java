@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.github.aaronai.example.client;
+package io.github.aaronai.grpc.client;
 
 import io.github.aaronai.proto.GreetingGrpc;
 import io.github.aaronai.proto.GreetingOuterClass;

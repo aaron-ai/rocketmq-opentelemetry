@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.github.aaronai.example.server;
+package io.github.aaronai.grpc.server;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
