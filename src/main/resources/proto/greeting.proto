@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package io.github.aaronai.proto;
+
+message SayHelloRequest {
+  string request_content = 1;
+}
+
+message SayHelloResponse {
+  string response_content = 1;
+}
+
+service Greeting{
+  rpc SayHello(SayHelloRequest) returns (SayHelloResponse) {}
+}

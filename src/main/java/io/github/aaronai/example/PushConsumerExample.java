@@ -1,4 +1,4 @@
-package org.example;
+package io.github.aaronai.example;
 
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientException;
