@@ -22,25 +22,21 @@ import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
 import org.apache.rocketmq.client.apis.SessionCredentialsProvider;
 import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
-import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
 import org.apache.rocketmq.client.apis.consumer.FilterExpression;
 import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
 import org.apache.rocketmq.client.apis.consumer.MessageListener;
 import org.apache.rocketmq.client.apis.consumer.PushConsumer;
 import org.apache.rocketmq.client.apis.message.Message;
-import org.apache.rocketmq.client.apis.message.MessageView;
 import org.apache.rocketmq.client.apis.producer.Producer;
 import org.apache.rocketmq.client.apis.producer.SendReceipt;
 import org.apache.rocketmq.client.apis.producer.Transaction;
 import org.apache.rocketmq.client.apis.producer.TransactionResolution;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RocketMqClients implements Closeable {
+public class RocketMqClients {
     private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
 
     private static final String ACCESS_KEY = "yourAccessKey";
@@ -53,9 +49,6 @@ public class RocketMqClients implements Closeable {
     private static final String TRANSACTION_TOPIC = "transactionTopic";
 
     private static final String MESSAGE_TAG = "yourMessageTagA";
-
-    private final Producer producer;
-    private final PushConsumer pushConsumer;
 
     public static Producer CreateProducer() throws ClientException {
         SessionCredentialsProvider sessionCredentialsProvider =
@@ -75,7 +68,7 @@ public class RocketMqClients implements Closeable {
                 .build();
     }
 
-    public RocketMqClients(MessageListener listener) throws ClientException {
+    public static PushConsumer CreatePushConsumer(MessageListener listener) throws ClientException {
         SessionCredentialsProvider sessionCredentialsProvider =
                 new StaticSessionCredentialsProvider(ACCESS_KEY, SECRET_KEY);
         ClientConfiguration clientConfiguration = ClientConfiguration.newBuilder()
@@ -91,7 +84,7 @@ public class RocketMqClients implements Closeable {
         subscriptionExpressions.put(DELAY_TOPIC, filterExpression);
         subscriptionExpressions.put(TRANSACTION_TOPIC, filterExpression);
 
-        pushConsumer = provider.newPushConsumerBuilder()
+        return provider.newPushConsumerBuilder()
                 .setClientConfiguration(clientConfiguration)
                 // Set the consumer group name.
                 .setConsumerGroup(consumerGroup)
@@ -100,23 +93,8 @@ public class RocketMqClients implements Closeable {
                 .setMessageListener(listener)
                 // May throw {@link ClientException} if the push consumer is not initialized.
                 .build();
-
-        // In most case, you don't need to create too many producers, singleton pattern is recommended.
-        producer = provider.newProducerBuilder()
-                .setClientConfiguration(clientConfiguration)
-                // Set the topic name(s), which is optional but recommended. It makes producer could prefetch the
-                // topic route before message publishing.
-                .setTopics(NORMAL_TOPIC, FIFO_TOPIC, DELAY_TOPIC, TRANSACTION_TOPIC)
-                .setTransactionChecker(messageView -> TransactionResolution.COMMIT)
-                // May throw {@link ClientException} if the producer is not initialized.
-                .build();
     }
 
-    @Override
-    public void close() throws IOException {
-        producer.close();
-        pushConsumer.close();
-    }
 
     public static SendReceipt sendNormalMessage(Producer producer) throws ClientException {
         byte[] body = "This is a normal message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
