@@ -21,15 +21,19 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class HttpClientExample {
+    private static final Logger logger = LoggerFactory.getLogger(HttpClientExample.class);
+
     public static void main(String[] args) {
         try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final HttpGet httpGet = new HttpGet("https://www.taobao.com/");
             final ClassicHttpResponse response = httpClient.execute(httpGet);
-            System.out.println("响应状态码：" + response.getCode());
+            logger.info("HTTP response={}", response);
             response.close();
         } catch (IOException e) {
             e.printStackTrace();
