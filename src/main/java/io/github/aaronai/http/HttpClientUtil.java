@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class HttpClientExample {
-    private static final Logger logger = LoggerFactory.getLogger(HttpClientExample.class);
+public class HttpClientUtil {
+    private static final Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
 
-    public static void main(String[] args) {
+    public static void sendGetRequest() {
         try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final HttpGet httpGet = new HttpGet("https://www.taobao.com/");
             final ClassicHttpResponse response = httpClient.execute(httpGet);
