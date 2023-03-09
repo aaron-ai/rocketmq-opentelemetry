@@ -35,7 +35,7 @@ public class GreetingServer {
         this.port = port;
     }
 
-    private void start() throws IOException {
+    public void start() throws IOException {
         logger.info("Server: starting...");
         server.start();
         logger.info("Server: started on listen on port {}", port);
@@ -50,15 +50,9 @@ public class GreetingServer {
         server.shutdown();
     }
 
-    private void blockUntilShutdown() throws InterruptedException {
+    public void blockUntilShutdown() throws InterruptedException {
         if (null != server) {
             server.awaitTermination();
         }
-    }
-
-    public static void main(String[] args) throws IOException, InterruptedException {
-        final GreetingServer server = new GreetingServer(18848);
-        server.start();
-        server.blockUntilShutdown();
     }
 }

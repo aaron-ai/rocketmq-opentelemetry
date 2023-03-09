@@ -29,15 +29,12 @@ import java.nio.charset.StandardCharsets;
 public class GreetingClient {
     private static final Logger logger = LoggerFactory.getLogger(GreetingClient.class);
 
-    public static void main(String[] args) {
+    public static void start() {
         ManagedChannel channel = NettyChannelBuilder.forTarget("127.0.0.1:18848").usePlaintext().build();
         final GreetingGrpc.GreetingBlockingStub stub = GreetingGrpc.newBlockingStub(channel);
         GreetingOuterClass.SayHelloRequest request =
                 GreetingOuterClass.SayHelloRequest.newBuilder().setRequestContent("request").build();
         final GreetingOuterClass.SayHelloResponse response = stub.sayHello(request);
         logger.info("received response={}", response);
-
-        // Define your message body.
-        byte[] body = "This is a normal message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
     }
 }

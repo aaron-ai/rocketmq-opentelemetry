@@ -17,8 +17,11 @@
 
 package io.github.aaronai.grpc.server;
 
+import io.github.aaronai.mq.RocketMqClients;
 import io.github.aaronai.proto.GreetingGrpc;
 import io.github.aaronai.proto.GreetingOuterClass;
+import org.apache.rocketmq.client.apis.ClientException;
+import org.apache.rocketmq.client.apis.producer.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +36,11 @@ public class GreetingService extends GreetingGrpc.GreetingImplBase {
                 GreetingOuterClass.SayHelloResponse.newBuilder().setResponseContent("This is an unary request").build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-
+        try {
+            Producer producer = RocketMqClients.CreateProducer();
+            RocketMqClients.sendNormalMessage(producer);
+        } catch (ClientException e) {
+            logger.error("Failed to send normal message", e);
+        }
     }
 }
