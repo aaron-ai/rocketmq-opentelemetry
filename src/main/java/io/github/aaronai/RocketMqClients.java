@@ -17,47 +17,41 @@
 
 package io.github.aaronai;
 
-import io.github.aaronai.example.client.GreetingClient;
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
 import org.apache.rocketmq.client.apis.SessionCredentialsProvider;
 import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
-import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
 import org.apache.rocketmq.client.apis.consumer.FilterExpression;
 import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
+import org.apache.rocketmq.client.apis.consumer.MessageListener;
 import org.apache.rocketmq.client.apis.consumer.PushConsumer;
+import org.apache.rocketmq.client.apis.message.Message;
 import org.apache.rocketmq.client.apis.producer.Producer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.rocketmq.client.apis.producer.SendReceipt;
+import org.apache.rocketmq.client.apis.producer.Transaction;
+import org.apache.rocketmq.client.apis.producer.TransactionResolution;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RocketMqClients implements Closeable {
-    private static final Logger logger = LoggerFactory.getLogger(GreetingClient.class);
+    private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
+
     private static final String NORMAL_TOPIC = "normalTopic";
     private static final String FIFO_TOPIC = "fifoTopic";
     private static final String DELAY_TOPIC = "delayTopic";
     private static final String TRANSACTION_TOPIC = "transactionTopic";
 
+    private static final String MESSAGE_TAG = "yourMessageTagA";
+
     private final Producer producer;
     private final PushConsumer pushConsumer;
 
-    public static final RocketMqClients INSTANCE;
-
-    static {
-        try {
-            INSTANCE = new RocketMqClients();
-        } catch (ClientException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private RocketMqClients() throws ClientException {
-        final ClientServiceProvider provider = ClientServiceProvider.loadService();
+    public RocketMqClients(MessageListener listener) throws ClientException {
         String accessKey = "yourAccessKey";
         String secretKey = "yourSecretKey";
         SessionCredentialsProvider sessionCredentialsProvider =
@@ -69,8 +63,7 @@ public class RocketMqClients implements Closeable {
                 .build();
 
         String consumerGroup = "yourConsumerGroup";
-        String tag = "yourMessageTagA";
-        FilterExpression filterExpression = new FilterExpression(tag, FilterExpressionType.TAG);
+        FilterExpression filterExpression = new FilterExpression(MESSAGE_TAG, FilterExpressionType.TAG);
         Map<String, FilterExpression> subscriptionExpressions = new HashMap<>();
         subscriptionExpressions.put(NORMAL_TOPIC, filterExpression);
         subscriptionExpressions.put(FIFO_TOPIC, filterExpression);
@@ -83,11 +76,7 @@ public class RocketMqClients implements Closeable {
                 .setConsumerGroup(consumerGroup)
                 // Set the subscription for the consumer.
                 .setSubscriptionExpressions(subscriptionExpressions)
-                .setMessageListener(messageView -> {
-                    // Handle the received message and return consume result.
-                    logger.info("Consume message={}", messageView);
-                    return ConsumeResult.SUCCESS;
-                })
+                .setMessageListener(listener)
                 // May throw {@link ClientException} if the push consumer is not initialized.
                 .build();
 
@@ -97,6 +86,7 @@ public class RocketMqClients implements Closeable {
                 // Set the topic name(s), which is optional but recommended. It makes producer could prefetch the
                 // topic route before message publishing.
                 .setTopics(NORMAL_TOPIC, FIFO_TOPIC, DELAY_TOPIC, TRANSACTION_TOPIC)
+                .setTransactionChecker(messageView -> TransactionResolution.COMMIT)
                 // May throw {@link ClientException} if the producer is not initialized.
                 .build();
     }
@@ -105,5 +95,70 @@ public class RocketMqClients implements Closeable {
     public void close() throws IOException {
         producer.close();
         pushConsumer.close();
+    }
+
+    public SendReceipt sendNormalMessage() throws ClientException {
+        byte[] body = "This is a normal message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
+        final Message message = provider.newMessageBuilder()
+                // Set topic for the current message.
+                .setTopic(NORMAL_TOPIC)
+                // Message secondary classifier of message besides topic.
+                .setTag(MESSAGE_TAG)
+                // Key(s) of the message, another way to mark message besides message id.
+                .setKeys("yourMessageKey-1c151062f96e")
+                .setBody(body)
+                .build();
+        return producer.send(message);
+    }
+
+    public SendReceipt sendFifoMessage() throws ClientException {
+        byte[] body = "This is a fifo message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
+        final Message message = provider.newMessageBuilder()
+                // Set topic for the current message.
+                .setTopic(FIFO_TOPIC)
+                // Message secondary classifier of message besides topic.
+                .setTag(MESSAGE_TAG)
+                // Key(s) of the message, another way to mark message besides message id.
+                .setKeys("yourMessageKey-1c151062f96e")
+                .setMessageGroup("yourMessageGroup")
+                .setBody(body)
+                .build();
+        return producer.send(message);
+    }
+
+    public SendReceipt sendDelayMessage() throws ClientException {
+        byte[] body = "This is a delay message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
+        final Message message = provider.newMessageBuilder()
+                // Set topic for the current message.
+                .setTopic(DELAY_TOPIC)
+                // Message secondary classifier of message besides topic.
+                .setTag(MESSAGE_TAG)
+                // Key(s) of the message, another way to mark message besides message id.
+                .setKeys("yourMessageKey-1c151062f96e")
+                .setDeliveryTimestamp(System.currentTimeMillis())
+                .setMessageGroup("yourMessageGroup")
+                .setBody(body)
+                .build();
+        return producer.send(message);
+    }
+
+    public SendReceipt sendTransactionMessage() throws ClientException {
+        byte[] body = "This is a transaction message for Apache RocketMQ".getBytes(StandardCharsets.UTF_8);
+        String tag = "yourMessageTagA";
+        final Message message = provider.newMessageBuilder()
+                // Set topic for the current message.
+                .setTopic(TRANSACTION_TOPIC)
+                // Message secondary classifier of message besides topic.
+                .setTag(tag)
+                // Key(s) of the message, another way to mark message besides message id.
+                .setKeys("yourMessageKey-565ef26f5727")
+                .setBody(body)
+                .build();
+        final Transaction transaction = producer.beginTransaction();
+        try {
+            return producer.send(message, transaction);
+        } finally {
+            transaction.commit();
+        }
     }
 }
