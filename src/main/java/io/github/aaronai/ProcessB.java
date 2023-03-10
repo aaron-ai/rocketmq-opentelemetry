@@ -17,24 +17,14 @@
 
 package io.github.aaronai;
 
-import io.github.aaronai.grpc.client.GreetingClient;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
+import io.github.aaronai.grpc.server.GreetingServer;
 
-public class Entry0 {
-    public static void main(String[] args) throws InterruptedException {
-        final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-        final Tracer tracer = openTelemetry.getTracer("io.github.aaronai");
-        final Span span = tracer.spanBuilder("ExampleUpstreamSpan").startSpan();
-        try (Scope ignored = span.makeCurrent()) {
-            GreetingClient.start();
-            Thread.sleep(1000);
-        } finally {
-            span.end();
-        }
-        Thread.sleep(99999999999L);
+import java.io.IOException;
+
+public class ProcessB {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        final GreetingServer server = new GreetingServer(18848);
+        server.start();
+        server.blockUntilShutdown();
     }
 }

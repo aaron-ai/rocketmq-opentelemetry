@@ -28,8 +28,8 @@ import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Entry2 {
-    private static final Logger logger = LoggerFactory.getLogger(Entry2.class);
+public class ProcessC {
+    private static final Logger logger = LoggerFactory.getLogger(ProcessC.class);
 
     @SuppressWarnings("resource")
     public static void main(String[] args) throws ClientException {
