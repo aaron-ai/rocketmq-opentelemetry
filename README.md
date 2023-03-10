@@ -1,4 +1,4 @@
-# 🚀 RocketMQ 🔭 OpenTelemetry Distributed Tracing Example
+# 🚀 RocketMQ × 🔭 OpenTelemetry Distributed Tracing Example
 
 This repository provides a practical demonstration of how to leverage OpenTelemetry to achieve distributed tracing across RocketMQ 5.0 🚀 and other libraries like gRPC and Apache HTTP client.
 
