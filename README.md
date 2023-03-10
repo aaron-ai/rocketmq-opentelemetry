@@ -36,6 +36,8 @@ The entire system is divided into three processes. Process A acts as a gRPC clie
 
 ```
 
+Specifically, the gRPC client sends a request within the scope of an upstream business span, while the RocketMQ push consumer also records a span for subsequent business logic after sending an HTTP request.
+
 ## License
 
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation
