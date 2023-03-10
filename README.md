@@ -19,7 +19,7 @@ You can download the Java agent from the [here](https://github.com/open-telemetr
 
 ## Workflow
 
-The entire system is divided into three processes. Process A acts as a gRPC client and sends an RPC request to process B, which acts as the gRPC server. While processing the gRPC request, process B sends a message to RocketMQ 5.0 server. Process C starts a RocketMQ 5.0 push consumer and, in the message listener for consuming the message, uses Apache HTTP client to send a GET request to taobao.com.
+The entire system is divided into three processes. Process A acts as a gRPC client and sends an RPC request to process B, which acts as the gRPC server. While processing the gRPC request, process B sends a message to RocketMQ 5.0 server. Process C starts a RocketMQ 5.0 push consumer and, in the message listener for consuming the message, uses Apache HTTP client to send a GET request to <https://taobao.com>.
 
 ## License
 
