@@ -33,10 +33,6 @@ public class GreetingService extends GreetingGrpc.GreetingImplBase {
     public void sayHello(io.github.aaronai.proto.GreetingOuterClass.SayHelloRequest request,
                          io.grpc.stub.StreamObserver<io.github.aaronai.proto.GreetingOuterClass.SayHelloResponse> responseObserver) {
         logger.info("Received request={}", request);
-        final GreetingOuterClass.SayHelloResponse response =
-                GreetingOuterClass.SayHelloResponse.newBuilder().setResponseContent("This is an unary request").build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
         try {
             Producer producer = RocketMqClients.CreateProducer();
             SendReceipt sendReceipt = RocketMqClients.sendNormalMessage(producer);
@@ -44,5 +40,9 @@ public class GreetingService extends GreetingGrpc.GreetingImplBase {
         } catch (ClientException e) {
             logger.error("Failed to send normal message", e);
         }
+        final GreetingOuterClass.SayHelloResponse response =
+                GreetingOuterClass.SayHelloResponse.newBuilder().setResponseContent("This is an unary request").build();
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 }

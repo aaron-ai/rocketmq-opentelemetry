@@ -41,12 +41,12 @@ public class RocketMqClients {
 
     private static final String ACCESS_KEY = "yourAccessKey";
     private static final String SECRET_KEY = "yourSecretKey";
-    private static final String ENDPOINTS = "foobar.com:8080";
+    private static final String ENDPOINTS = "rmq-cn-5yd34ft5y02.cn-hangzhou.rmq.aliyuncs.com:8080";
 
-    private static final String NORMAL_TOPIC = "normalTopic";
-    private static final String FIFO_TOPIC = "fifoTopic";
-    private static final String DELAY_TOPIC = "delayTopic";
-    private static final String TRANSACTION_TOPIC = "transactionTopic";
+    private static final String NORMAL_TOPIC = "lingchu_normal_topic";
+    private static final String FIFO_TOPIC = "lingchu_fifo_topic";
+    private static final String DELAY_TOPIC = "lingchu_delay_topic";
+    private static final String TRANSACTION_TOPIC = "lingchu_transaction_topic";
 
     private static final String MESSAGE_TAG = "yourMessageTagA";
 
@@ -68,6 +68,7 @@ public class RocketMqClients {
                 .build();
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public static PushConsumer CreatePushConsumer(MessageListener listener) throws ClientException {
         SessionCredentialsProvider sessionCredentialsProvider =
                 new StaticSessionCredentialsProvider(ACCESS_KEY, SECRET_KEY);
@@ -76,7 +77,7 @@ public class RocketMqClients {
                 .setCredentialProvider(sessionCredentialsProvider)
                 .build();
 
-        String consumerGroup = "yourConsumerGroup";
+        String consumerGroup = "GID_lingchu";
         FilterExpression filterExpression = new FilterExpression(MESSAGE_TAG, FilterExpressionType.TAG);
         Map<String, FilterExpression> subscriptionExpressions = new HashMap<>();
         subscriptionExpressions.put(NORMAL_TOPIC, filterExpression);
