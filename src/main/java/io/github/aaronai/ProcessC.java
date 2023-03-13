@@ -41,6 +41,7 @@ public class ProcessC {
             final Tracer tracer = openTelemetry.getTracer("io.github.aaronai");
             final Span span = tracer.spanBuilder("ExampleDownstreamSpan").startSpan();
             try {
+                // do something here.
                 Thread.sleep(1000);
             } catch (InterruptedException ignored) {
             }

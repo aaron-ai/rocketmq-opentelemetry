@@ -31,6 +31,7 @@ public class ProcessA {
         final Span span = tracer.spanBuilder("ExampleUpstreamSpan").startSpan();
         try (Scope ignored = span.makeCurrent()) {
             GreetingClient.start();
+            // do something here.
             Thread.sleep(1000);
         } finally {
             span.end();
